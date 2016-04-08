@@ -1,2 +1,2 @@
 # the-button
-A button for Happening
+A button for Happening.im
