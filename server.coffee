@@ -31,3 +31,41 @@ exports.client_incr = ->
   #  if Db.shared.get('leader') != Db.shared.get('newleader')
   #    Event.create
   #      text: "New leader"
+
+exports.client_funnies = ->
+	funnies = [
+    "Stop clicking me!"
+    "Are you still here?"
+    "ClickyMcClickface"
+    "+1"
+    "Up you go!"
+    "Never gonna give you up!"
+    "I'd appreciated if you would stop touching me. Seriously."
+    "Clean your screen!"
+    "May the clicks be with you"
+    "Has it clicked yet? You're waisting my time. And yours."
+    "CLICK"
+    "Missed me"
+    "rm -rf / --no-perserve-root"
+    ":)"
+    "----------->"
+    "My mom always said: life"
+    "We click, not because it is easy, but because it is hard"
+    App.userName() + ", tear down these clicks!"
+    "Frankly, my dear, I don't give a click"
+    "Final warning: Please. Stop. Clicking"
+    "And god said: let there be clicks"
+    "One Click to rule them all"
+    "clicks+clicks=2clicks"
+    "iClick"
+    "5...4...3...2...1... CLICKERBIRDS ARE GO"
+    "Did you know? Next time you click, your screen may burst"
+    "You know, all this clicking is really starting to press my buttons"
+    "Have you tried turning it off and on again?"
+    "DOMINATING"
+    "God save our royal Click"
+
+  ]
+
+  r = Math.floor(Math.random()*funnies.length())
+  text = funnies[r]

@@ -31,7 +31,7 @@ exports.render = ->
 						funnies.set(null)
 
 				if score == 400
-					funnies.set("TEST2")
+					funnies.set(Server.funnies())
 
 	Ui.list !->
 		Dom.style margin: '0 15px'
