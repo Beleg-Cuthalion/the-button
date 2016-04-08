@@ -3,12 +3,16 @@ App = require 'app'
 Event = require 'event'
 Comments = require 'comments'
 
-exports.onInstall = ->
-  #set the counter to 0 on plugin installation
-  clicks = Db.shared.set 'counters', App.userId(), 0
-  total = Db.shared.set 'total', 0
+exports.onInstall = !->
+    #set the counter to 0 on plugin installation
+    #clicks = Db.shared.set 'counters', App.userId(), 0
+    #total = Db.shared.set 'total', 0
+    Db.personal(App.memberId()).set('funnies', 0)
 
-exports.client_incr = ->
+#exports.onUpgrade = !->
+    #Db.personal(App.memberId()).modify 'funnies', "frick"
+
+exports.client_incr = !->
   userId = App.userId()
   oldSorted = (+k for k of Db.shared.get('counters') when +k).sort()
   oldPos = oldSorted.indexOf userId
@@ -32,8 +36,8 @@ exports.client_incr = ->
   #    Event.create
   #      text: "New leader"
 
-exports.client_funnies = ->
-	funnies = [
+exports.client_funnies = !->
+  lines = [
     "Stop clicking me!"
     "Are you still here?"
     "ClickyMcClickface"
@@ -56,7 +60,7 @@ exports.client_funnies = ->
     "Final warning: Please. Stop. Clicking"
     "And god said: let there be clicks"
     "One Click to rule them all"
-    "clicks+clicks=2clicks"
+    "click+click=2clicks"
     "iClick"
     "5...4...3...2...1... CLICKERBIRDS ARE GO"
     "Did you know? Next time you click, your screen may burst"
@@ -64,8 +68,8 @@ exports.client_funnies = ->
     "Have you tried turning it off and on again?"
     "DOMINATING"
     "God save our royal Click"
+    "If I had a penny for everytime you clicked, I'd have" + Db.shared.get 'counters', App.userId()+ "pennies"
+    ]
 
-  ]
-
-  r = Math.floor(Math.random()*funnies.length())
-  text = funnies[r]
+  r = Math.floor(Math.random()*29)
+  Db.personal(App.memberId()).set('funnies', "test")

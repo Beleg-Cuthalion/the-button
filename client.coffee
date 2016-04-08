@@ -6,7 +6,7 @@ Ui = require 'ui'
 Obs = require 'obs'
 App = require 'app'
 
-funnies = Obs.create()
+#funnies = Obs.create()
 
 exports.render = ->
 	Ui.card !->
@@ -23,15 +23,15 @@ exports.render = ->
 
 			Obs.observe !->
 				score = Db.shared.get('counters', App.userId())
-				if funnies.get() != ""
+				if Db.personal(App.memberId()).get('funnies') != ""
 					Dom.div !->
 						Dom.style fontWeight: 'bold', fontSize: '300%', textAlign: 'center'
-						Dom.text funnies.get()
-					Obs.onTime 3000, !->
-						funnies.set(null)
+						Dom.text Db.personal(App.memberId()).get('funnies')
+					#Obs.onTime 3000, !->
+					#	Db.personal.funnies.set(null)
 
-				if score == 400
-					funnies.set(Server.funnies())
+				if score == 529
+					Server.call 'funnies'
 
 	Ui.list !->
 		Dom.style margin: '0 15px'
