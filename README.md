@@ -1,2 +1,2 @@
 # the-button
-A button for Happening.im
+A button for [Happening.im](https://happening.im)
