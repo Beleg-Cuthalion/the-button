@@ -63,8 +63,9 @@ exports.onUpgrade = !->
 exports.client_incr = !->
     userId = App.userId()
     f = Math.floor(Math.random()*50)
-    Db.shared.set('oldSorted', (+k for k of Db.shared.get('counters') when +k).sort())
-    Db.shared.set('oldPos', App.userId(), (Db.shared.get('oldSorted').indexOf(userId)))
+
+    oldSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counter', a)
+    oldPos = oldSorted.indexOf userId
 
     Db.shared.modify 'counters', App.userId(), (v) -> v+1
     Db.shared.modify 'total', (v) -> v+1
@@ -73,27 +74,16 @@ exports.client_incr = !->
         r = Math.floor(Math.random()*lines.length)
         Db.personal(userId).set('funnies', lines[r])
 
-    Db.shared.set('newSorted',(+k for k of Db.shared.get('counters') when +k).sort())
-    Db.shared.set('newPos', App.userId(), (Db.shared.get('newSorted').indexOf(userId)))
-    #runnerUp = Db.shared.get('newSorted')[Db.shared.get('newPos', App.userId())]
-###
-    if newPos isnt oldPos
+    newSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counter', a)
+    newPos = oldSorted.indexOf userId
+
+    for i in [oldPos...newPos]
+        log 'triggered'
         Comments.post
   		    u: App.userId()
-  		    a: runnerUp
-  		    pushText: App.userName() + " just outclicked you!"
+  		    a: newSorted[i]
+  		    pushText: newSorted[i-1] + " just outclicked you!"
   		    path: '/'
-###
-
-
-
-  # Db.shared.modify 'counters', App.userId(), (v) -> v+1
-  # Db.shared.modify 'total', (v) -> v+1
-  # Db.shared.iterate 'counters', (counter) !->
-  #   Db.shared.set 'newleader', App.userId()
-  #  if Db.shared.get('leader') != Db.shared.get('newleader')
-  #    Event.create
-  #      text: "New leader"
 
 exports.client_clearfunnies = !->
     userId = App.userId()
