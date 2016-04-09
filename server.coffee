@@ -5,24 +5,20 @@ Comments = require 'comments'
 
 exports.onInstall = !->
     #set the counter to 0 on plugin installation
-    #clicks = Db.shared.set 'counters', App.userId(), 0
-    #total = Db.shared.set 'total', 0
-    #userId = App.userId()
+    Db.shared.set('counters', App.userId(), 0)
+    Db.shared.set 'total', 0
     for user in App.userIds()
-        Db.personal(user).set 'funnies', 32423
-        log 'adding funnies'
+        Db.personal(user).set('funnies', null)
 
 exports.onUpgrade = !->
-    for user in App.userId()
-        Db.personal(user).set 'funnies', 32423
-        log 'adding funnies'
-    #userId = App.userId()
-
+    for user in App.userIds()
+        Db.personal(user).set('funnies', null)
 
 exports.client_incr = !->
   userId = App.userId()
   oldSorted = (+k for k of Db.shared.get('counters') when +k).sort()
   oldPos = oldSorted.indexOf userId
+  Db.personal(userId).set('limit', 0)
   Db.shared.modify 'counters', App.userId(), (v) -> v+1
   Db.shared.modify 'total', (v) -> v+1
   newSorted = (+k for k of Db.shared.get('counters') when +k).sort()
@@ -46,6 +42,7 @@ exports.client_incr = !->
 exports.client_funnies = !->
     userId = App.userId()
     lines = [
+        "10000 years of human progress and here we are, clicking and clicking and clicking..."
         "Stop clicking me!"
         "Are you still here?"
         "ClickyMcClickface"
@@ -54,30 +51,43 @@ exports.client_funnies = !->
         "Never gonna give you up!"
         "I'd appreciated if you would stop touching me. Seriously."
         "Clean your screen!"
-        "May the clicks be with you"
+        "May the clicks be with you."
         "Has it clicked yet? You're waisting my time. And yours."
         "CLICK"
-        "Missed me"
+        "Missed me."
         "rm -rf / --no-perserve-root"
         ":)"
         "----------->"
-        "My mom always said: life"
-        "We click, not because it is easy, but because it is hard"
+        "My mom always said: life was like a button. You never know who's gonna click."
+        "We click, not because it is easy, but because it is hard."
         App.userName() + ", tear down these clicks!"
         "Frankly, my dear, I don't give a click"
         "Final warning: Please. Stop. Clicking"
         "And god said: let there be clicks"
-        "One Click to rule them all"
+        "One Click to rule them all."
         "click+click=2clicks"
         "iClick"
         "5...4...3...2...1... CLICKERBIRDS ARE GO"
-        "Did you know? Next time you click, your screen may burst"
-        "You know, all this clicking is really starting to press my buttons"
+        "Did you know? Next time you click, your screen may burst."
+        "You know, all this clicking is really starting to press my buttons."
         "Have you tried turning it off and on again?"
         "DOMINATING"
         "God save our royal Click"
-        "If I had a penny for everytime you clicked, I'd have" + Db.shared.get 'counters', App.userId()+ "pennies"
+        "If I had a penny for everytime you clicked, I'd have" + Db.shared.get 'counters', App.userId()+ "pennies."
+        "Wanted! Someone to NOT click me all the time."
+        "If you make it to the end, there *will* be cake."
+        "The finish line is only a few more clicks from here."
+        "乁( ⁰͡ Ĺ̯ ⁰͡ ) ㄏ"
+        "Like a broken pencil, this too may be pointless."
+        "Everytime you click, something happens. Really."
+        "Did you find the easter egg yet?"
+        "How would you feel if someone kept touching you? 'Aroused'? Well, yeah... But besides that?"
     ]
 
-    r = Math.floor(Math.random()*29)
-    Db.personal(userId).set 'funnies', "test"
+    r = Math.floor(Math.random()*40)
+    Db.personal(userId).set('funnies', lines[r])
+    Db.personal(userId).set('limit', 1)
+
+exports.client_clearfunnies = !->
+    userId = App.userId()
+    Db.personal(userId).set('funnies', null)
