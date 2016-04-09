@@ -61,27 +61,31 @@ exports.onUpgrade = !->
         Db.personal(user).set('funnies', null)
 
 exports.client_incr = !->
-  userId = App.userId()
-  f = Math.floor(Math.random()*50)
-  oldSorted = (+k for k of Db.shared.get('counters') when +k).sort()
-  oldPos = oldSorted.indexOf userId
-  Db.shared.modify 'counters', App.userId(), (v) -> v+1
-  Db.shared.modify 'total', (v) -> v+1
+    userId = App.userId()
+    f = Math.floor(Math.random()*50)
+    Db.shared.set('oldSorted', (+k for k of Db.shared.get('counters') when +k).sort())
+    Db.shared.set('oldPos', App.userId(), (Db.shared.get('oldSorted').indexOf(userId)))
 
-  if f == 25
-      r = Math.floor(Math.random()*lines.length)
-      Db.personal(userId).set('funnies', lines[r])
-      log 'triggered'
+    Db.shared.modify 'counters', App.userId(), (v) -> v+1
+    Db.shared.modify 'total', (v) -> v+1
 
-  newSorted = (+k for k of Db.shared.get('counters') when +k).sort()
-  newPos = newSorted.indexOf userId
-  runnerUp = newSorted[newPos+1]
-  if newPos != oldPos
-  	Comments.post
-  		u: App.userId()
-  		a: runnerUp
-  		pushText: App.userName() + " just outclicked you!"
-  		path: '/'
+    if f is 25
+        r = Math.floor(Math.random()*lines.length)
+        Db.personal(userId).set('funnies', lines[r])
+
+    Db.shared.set('newSorted',(+k for k of Db.shared.get('counters') when +k).sort())
+    Db.shared.set('newPos', App.userId(), (Db.shared.get('newSorted').indexOf(userId)))
+    #runnerUp = Db.shared.get('newSorted')[Db.shared.get('newPos', App.userId())]
+###
+    if newPos isnt oldPos
+        Comments.post
+  		    u: App.userId()
+  		    a: runnerUp
+  		    pushText: App.userName() + " just outclicked you!"
+  		    path: '/'
+###
+
+
 
   # Db.shared.modify 'counters', App.userId(), (v) -> v+1
   # Db.shared.modify 'total', (v) -> v+1

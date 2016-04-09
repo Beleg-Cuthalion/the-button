@@ -21,7 +21,7 @@ exports.render = ->
 
 		Obs.observe !->
 			funny = Db.personal.get('funnies')
-			if funny != ""
+			if funny isnt ""
 				Dom.div !->
 					Dom.style fontWeight: 'bold', fontSize: '300%', textAlign: 'center'
 					Dom.text funny
