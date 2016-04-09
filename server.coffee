@@ -64,7 +64,7 @@ exports.client_incr = !->
     userId = App.userId()
     f = Math.floor(Math.random()*50)
 
-    oldSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counter', a)
+    oldSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counters', a)
     log "oldSorted", JSON.stringify oldSorted
     oldPos = oldSorted.indexOf userId
     log "oldPos", oldPos
@@ -76,7 +76,7 @@ exports.client_incr = !->
         r = Math.floor(Math.random()*lines.length)
         Db.personal(userId).set('funnies', lines[r])
 
-    newSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counter', a)
+    newSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counters', a)
     log "newSorted", JSON.stringify newSorted
     newPos = oldSorted.indexOf userId
     log "newPos", newPos
