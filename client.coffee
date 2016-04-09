@@ -23,15 +23,18 @@ exports.render = ->
 
 			Obs.observe !->
 				score = Db.shared.get('counters', App.userId())
-				if Db.personal(App.memberId()).get('funnies') != ""
+				userId = App.userId()
+				line = Db.personal(userId).get('funnies')
+				if line != ""
 					Dom.div !->
 						Dom.style fontWeight: 'bold', fontSize: '300%', textAlign: 'center'
-						Dom.text Db.personal(App.memberId()).get('funnies')
+						Dom.text line
+							#Db.personal(App.userId()).get('funnies')
 					#Obs.onTime 3000, !->
 					#	Db.personal.funnies.set(null)
 
-				if score == 529
-					Server.call 'funnies'
+				#if score == 529
+				#	Server.call 'funnies'
 
 	Ui.list !->
 		Dom.style margin: '0 15px'
