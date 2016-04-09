@@ -78,16 +78,21 @@ exports.client_incr = !->
 
     newSorted = (+k for k,v of Db.shared.get('counters') when +k).sort (a,b) -> Db.shared.get('counters', b) - Db.shared.get('counters', a)
     log "newSorted", JSON.stringify newSorted
-    newPos = oldSorted.indexOf userId
+    newPos = newSorted.indexOf userId
     log "newPos", newPos
 
-    for i in [oldPos...newPos]
-        log 'triggered'
+    for i in [newPos+1..oldPos]
+        Event.create
+            lowPrio: true
+            text: App.userName(newSorted[i]) + " outclicked you!"
+
+###
         Comments.post
   		    u: App.userId()
   		    a: newSorted[i]
   		    pushText: newSorted[i-1] + " just outclicked you!"
   		    path: '/'
+###
 
 exports.client_clearfunnies = !->
     userId = App.userId()
