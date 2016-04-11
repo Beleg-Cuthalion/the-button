@@ -25,9 +25,12 @@ exports.render = ->
 				Dom.div !->
 					Dom.style fontWeight: 'bold', fontSize: '300%', textAlign: 'center'
 					Dom.text funny
-				Obs.onTime 3000, !->
+				Obs.onTime 6000, !->
 					Server.sync 'clearfunnies', !->
 				    	Db.personal.set('funnies', null)
+				Obs.onTime 300000, !->
+					Server.sync 'cleartime', !->
+						Db.personal.set('timelimit', 1)
 
 	Ui.list !->
 		Dom.style margin: '0 15px'
