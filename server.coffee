@@ -118,9 +118,7 @@ exports.client_incr = !->
     oldPos = oldSorted.indexOf userId
     Db.shared.modify 'counters', App.userId(), (v) -> v+1
     Db.shared.modify 'total', (v) -> v+1
-    if f < 25 and Db.personal(userId).get('limit') is 0 #and Db.personal(userId).get('timelimit') is 0 #last two statements are redundant, but easier to remove time limit later on
-        #r = Math.floor(Math.random()*lines.length)
-        #Db.personal(userId).set('funnies', lines[r])
+    if f is 25 and Db.personal(userId).get('limit') is 0 and Db.personal(userId).get('timelimit') is 0 #last two statements are redundant, but easier to remove time limit later on
         fun = getRandomFunny(userId)
         Db.personal(userId).set('funnies', fun)
         Db.personal(userId).set('limit', 1)
@@ -142,7 +140,7 @@ getRandomFunny = (userId) !->
         i = i + 1 % lines.length # wrap around if needed
 
     # i is now the first unseen funny after rnd
-    seen i, true
+    seen.set i, true
     return lines[i]
     Db.personal(userId).set('seenlines', i, true)
 
