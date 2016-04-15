@@ -24,8 +24,12 @@ exports.render = ->
 					Dom.style textTransform: 'uppercase', fontWeight: 'bold', fontSize: '500%', color: Plugin.colors().highlight
 					Dom.text "Click"
 				Dom.onTap !->
-					Server.sync 'incr', !->
-						Db.shared.modify 'counters', App.userId(), (v) -> v+1
+					counters = Db.shared.ref 'counters', App.userId()
+					if counters?
+						Server.sync 'incr', !->
+							counters.incr()
+					else
+						Server.call 'incr'
 
 		Obs.observe !->
 			funny = Db.personal.get('funnies')
