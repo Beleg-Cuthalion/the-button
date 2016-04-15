@@ -42,7 +42,7 @@ exports.render = ->
 				    	Db.personal.set('funnies', undefined)
 				Obs.onTime 300000, !->
 					Server.sync 'cleartime', !->
-						Db.personal.set('timelimit', 1)
+						Db.personal.set('timelimit', 0)
 
 	Ui.list !->
 		Dom.style margin: '0 15px'
