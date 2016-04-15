@@ -1,6 +1,10 @@
-#Big thanks to Peter for his help, debugging and tips.
+###
 
-#Snippets of code in both client.coffee and server.coffee have been adapted from the documentation and existing Happening plugins: Example, Photohunt and BombDefuse
+	Big thanks to Peter for his help, debugging and tips.
+
+	Snippets of code in both client.coffee and server.coffee have been adapted from the Happening documentation and existing Happening plugins: Example, Photohunt and BombDefuse
+
+###
 
 Comments = require 'comments'
 Db = require 'db'
@@ -25,13 +29,13 @@ exports.render = ->
 
 		Obs.observe !->
 			funny = Db.personal.get('funnies')
-			if funny isnt ""
+			if funny?
 				Dom.div !->
 					Dom.style fontWeight: 'bold', fontSize: '300%', textAlign: 'center'
 					Dom.text funny
 				Obs.onTime 6000, !->
 					Server.sync 'clearfunnies', !->
-				    	Db.personal.set('funnies', null)
+				    	Db.personal.set('funnies', undefined)
 				Obs.onTime 300000, !->
 					Server.sync 'cleartime', !->
 						Db.personal.set('timelimit', 1)
