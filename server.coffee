@@ -35,8 +35,8 @@ exports.client_incr = !->
     if newPos isnt oldPos
         for i in [newPos+1..oldPos]
             Event.create
-                lowPrio: true
-                text: App.userName(newSorted[i]) + " outclicked you!"
+                lowPrio: newSorted[i]
+                text: App.userName() + " outclicked you!"
 
 getRandomFunny = (userId) !->
     i = rnd = Math.round(Math.random() * Funnies.count())
@@ -46,7 +46,6 @@ getRandomFunny = (userId) !->
         i = i + 1 % Funnies.count() # wrap around if needed
     # i is now the first unseen funny after rnd
     seen.set i, true
-    Db.personal(userId).set('seenlines', i, true)
     return Funnies.getLine(i)
 
 exports.client_clearfunnies = !->
