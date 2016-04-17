@@ -24,6 +24,8 @@ exports.client_incr = !->
 		Db.personal(userId).set('limit', 1)
 		Db.personal(userId).set('timelimit', 1)
 		Db.personal(userId).modify 'odds', (v) -> v*1.2
+		Timer.set 6000, 'clearFunny', userId
+		Timer.set 300000, 'clearTime', userId
 
 	newSorted = getSortedCounters()
 	newPos = newSorted.indexOf userId
@@ -45,12 +47,12 @@ getSortedCounters = ->
 	counters = Db.shared.get('counters')
 	(+k for k,v of counters).sort (a,b) -> counters[b] - counters[a]
 
-exports.client_clearfunnies = !->
-	Db.personal(App.userId()).set('funnies', undefined)
-	Db.personal(App.userId()).set('limit', 0)
+exports.clearFunny = (userId) !->
+	Db.personal(userId).set 'funnies', undefined
+	Db.personal(userId).set 'limit', 0
 
-exports.client_cleartime = !->
-	Db.personal(App.userId()).set('timelimit', 0)
+exports.cleartime = (userId) !->
+	Db.personal(userId).set 'timelimit', 0
 
 ### useful for debugging
 exports.onUpgrade = !->
