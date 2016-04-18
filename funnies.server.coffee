@@ -1,8 +1,11 @@
-exports.count = -> lines.length
-
-exports.getLine = (index) -> exports[index]
-
-exports.lines = -> lines
+exports.getRandom = (seen) !->
+	i = rnd = Math.round(Math.random() * lines.length)
+	while seen.get i
+		break if i is (rnd - 1)
+		i = (i + 1) % lines.length # wrap around if needed
+	# i is now the first unseen funny after rnd
+	seen.set i, true
+	return lines[i]
 
 lines = [
 	"10000 years of human progress and here we are, clicking and clicking and clicking..."
