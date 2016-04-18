@@ -3,6 +3,7 @@ App = require 'app'
 Event = require 'event'
 Comments = require 'comments'
 Funnies = require 'funnies'
+Timer = require 'timer'
 
 exports.client_incr = !->
 	userId = App.userId()
@@ -42,7 +43,6 @@ initUser = !->
 	Db.personal(App.userId()).set('odds', 50)
 	Db.personal(App.userId()).set('timelimit', 0)
 
-
 getSortedCounters = ->
 	counters = Db.shared.get('counters')
 	(+k for k,v of counters).sort (a,b) -> counters[b] - counters[a]
@@ -51,8 +51,17 @@ exports.clearFunny = (userId) !->
 	Db.personal(userId).set 'funnies', undefined
 	Db.personal(userId).set 'limit', 0
 
-exports.cleartime = (userId) !->
+exports.clearTime = (userId) !->
 	Db.personal(userId).set 'timelimit', 0
+
+exports.onLeave = (userId) !->
+	log '1', userId
+	Db.personal(userId).set('funnies', null)
+	Db.personal(userId).set('limit', null)
+	Db.personal(userId).set('odds', null)
+	Db.personal(userId).set('timelimit', null)
+	Db.shared.set('counters', userId, null)
+
 
 ### useful for debugging
 exports.onUpgrade = !->

@@ -23,7 +23,7 @@ lines = [
 	"Missed me."
 	"rm -rf / --no-perserve-root"
 	":)"
-	"That's one smell click for a man, one tiny click for mankind."
+	"That's one small click for a man, one tiny click for mankind."
 	"My mom always said: life was like a button. You never know who's gonna click."
 	"We click, not because it is easy, but because it is hard."
 	"Frankly, my dear, I don't give a click"
