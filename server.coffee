@@ -53,20 +53,20 @@ exports.clearFunny = (userId) !->
 
 exports.clearTime = (userId) !->
 	Db.personal(userId).set 'timelimit', 0
+	log 'time cleared'
 
 exports.onLeave = (userId) !->
-	log '1', userId
 	Db.personal(userId).set('funnies', null)
 	Db.personal(userId).set('limit', null)
 	Db.personal(userId).set('odds', null)
 	Db.personal(userId).set('timelimit', null)
 	Db.shared.set('counters', userId, null)
 
-
-### useful for debugging
+### useful for debugging and fixes
 exports.onUpgrade = !->
 	for user in App.userIds()
-		Db.personal(user).set('funnies', null)
+		#Db.personal(user).set('funnies', null)
 		Db.personal(user).set('limit', 0)
 		Db.personal(user).set('timelimit', 0)
+		Db.personal(user).set('odds', 60)
 ###
