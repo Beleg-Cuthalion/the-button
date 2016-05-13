@@ -41,7 +41,8 @@ renderFunny = !->
 		funny = Db.personal.get('funnies')
 		if funny?
 			Dom.div !->
-				Dom.style fontWeight: 'bold', fontSize: '200%', textAlign: 'center'
+				border: '3px solid grey', borderRadius: '3px', padding: '8px', fontSize: '14pt'
+				#Dom.style fontWeight: 'bold', fontSize: '200%', textAlign: 'center'
 				Dom.text funny
 
 renderScores = !->

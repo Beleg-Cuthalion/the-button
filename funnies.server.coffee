@@ -96,4 +96,9 @@ lines = [
 	"Don't beleive anything atoms say, they make up everything!"
 	"What does the B stand for in Benoit B. Mandlebrot? Benoit B. Mandlebrot."
 	"A neutrino walks into a bar."
+	"No matter how kind you are, German children will always be Kinder."
+	"Why don't ants get sick? Because they have little anty-bodies."
+	"What's the stupidest animal in the jungle? A polar bear"
+	"What is Harry Potters favorite method of getting down a hill? Walking. JK: Rolling."
+	"What's the difference between a well dressed man on a unicycle and a poorly dressed man on a bike? Attire."
 ]

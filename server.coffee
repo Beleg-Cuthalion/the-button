@@ -19,7 +19,7 @@ exports.client_incr = !->
 	Db.shared.incr 'total'
 
 	f = Math.floor(Math.random()*Db.personal(userId).get('odds'))
-	if f is 25 and Db.personal(userId).get('limit') is 0 and Db.personal(userId).get('timelimit') is 0 #last two statements are redundant, but easier to remove time limit later on
+	if f < 25 and Db.personal(userId).get('limit') is 0 #and Db.personal(userId).get('timelimit') is 0 #last two statements are redundant, but easier to remove time limit later on
 		fun = Funnies.getRandom Db.personal(userId).ref('seenlines')
 		Db.personal(userId).set('funnies', fun)
 		Db.personal(userId).set('limit', 1)
