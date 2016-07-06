@@ -6,6 +6,11 @@
 
 ###
 
+
+###
+done = Obs.create true Obs.observe !-> diff = player.get('score') - localPlayer.peek('score') return if diff is 0 done.set false setInterval (1/diff), !-> localPlayer.incr 'score' if player.get('score') is localPlayer.peek('score') done.set true
+###
+
 Comments = require 'comments'
 Db = require 'db'
 Dom = require 'dom'
@@ -13,6 +18,9 @@ Server = require 'server'
 Ui = require 'ui'
 Obs = require 'obs'
 App = require 'app'
+Plugin = require 'plugin'
+
+buffer = Obs.create 0
 
 exports.render = ->
 	Ui.card !->
@@ -20,7 +28,7 @@ exports.render = ->
 
 		renderFunny()
 
-	renderScores()
+	renderScores
 
 renderButton = !->
 	Dom.div !->
@@ -28,27 +36,51 @@ renderButton = !->
 		Dom.div !->
 			Dom.style textTransform: 'uppercase', fontWeight: 'bold', fontSize: '500%', color: Plugin.colors().highlight
 			Dom.text "Click"
+
 		Dom.onTap !->
+			###
 			counter = Db.shared.ref 'counters', App.userId()
 			if counter?
 				Server.sync 'incr', !->
 					counter.incr()
 			else
 				Server.call 'incr'
+			###
+
+			if not buffer.peek() # buffer still 0? then this is the first click
+				Obs.onTime 1000, !-> flushBuffer buffer
+				log 'buffered', buffer
+			buffer.incr()
+			log 'buffer' #, buffer.get()
+
+flushBuffer = !->
+	counter = Db.shared.ref 'counters', App.userId()
+	Server.sync 'incr', buffer.get(), !->
+		counter.set(counter.get() + buffer.get())
+		buffer.set(0)
 
 renderFunny = !->
 	Obs.observe !->
 		funny = Db.personal.get('funnies')
 		if funny?
 			Dom.div !->
-				border: '3px solid grey', borderRadius: '3px', padding: '8px', fontSize: '14pt'
-				#Dom.style fontWeight: 'bold', fontSize: '200%', textAlign: 'center'
-				Dom.text funny
+				Dom.animate
+            			create:
+            				opacity: 1 # target
+            				initial:
+                  				opacity: 0
+            			remove:
+            				opacity: 0 # target
+            				initial:
+                  				opacity: 1
+            			content: !->
+						Dom.style fontSize: '150%', textAlign: 'center', padding: "30px 5px 15px"
+						Dom.text funny
 
-renderScores = !->
+renderScores = (buffer) !->
 	Ui.list !->
 		Dom.style margin: '0 15px'
-		Db.shared.iterate 'counters', renderScore, (counter) -> -counter.get()
+		Db.shared.iterate 'counters', renderScore, (counter) -> -(counter.get() + if (+counter.key() is App.userId()) then buffer.get() else 0)
 
 renderScore = (counter) !->
 	Ui.item !->
@@ -62,4 +94,7 @@ renderScore = (counter) !->
 			Dom.style marginLeft: '10px', Flex: 1
 			Dom.text App.userName(userId)
 		Dom.div !->
-			Dom.text counter.get()
+			if userId is App.userId()
+				Dom.text counter.get() + buffer.get()
+			else
+				Dom.text counter.get()

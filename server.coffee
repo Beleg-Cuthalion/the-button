@@ -5,7 +5,7 @@ Comments = require 'comments'
 Funnies = require 'funnies'
 Timer = require 'timer'
 
-exports.client_incr = !->
+exports.client_incr = (clicks) !->
 	userId = App.userId()
 	counter = Db.shared.ref 'counters', userId
 
@@ -15,16 +15,17 @@ exports.client_incr = !->
 	oldSorted = getSortedCounters()
 	oldPos = oldSorted.indexOf userId
 
-	counter.incr()
-	Db.shared.incr 'total'
+	counter.incr(clicks)
+	#Db.shared.incr 'total'
 
 	f = Math.floor(Math.random()*Db.personal(userId).get('odds'))
-	if f < 25 and Db.personal(userId).get('limit') is 0 #and Db.personal(userId).get('timelimit') is 0 #last two statements are redundant, but easier to remove time limit later on
+	#log 'f', f
+	if f is 25 and Db.personal(userId).get('limit') is 0 and Db.personal(userId).get('timelimit') is 0 #last two statements are somewhat redundant, but easier to remove time limit later on
 		fun = Funnies.getRandom Db.personal(userId).ref('seenlines')
 		Db.personal(userId).set('funnies', fun)
 		Db.personal(userId).set('limit', 1)
 		Db.personal(userId).set('timelimit', 1)
-		Db.personal(userId).modify 'odds', (v) -> v*1.2
+		Db.personal(userId).modify 'odds', (v) -> v*1.1
 		Timer.set 6000, 'clearFunny', userId
 		Timer.set 300000, 'clearTime', userId
 
@@ -53,7 +54,7 @@ exports.clearFunny = (userId) !->
 
 exports.clearTime = (userId) !->
 	Db.personal(userId).set 'timelimit', 0
-	log 'time cleared'
+	#log 'time cleared'
 
 exports.onLeave = (userId) !->
 	Db.personal(userId).set('funnies', null)

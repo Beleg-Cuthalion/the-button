@@ -101,4 +101,5 @@ lines = [
 	"What's the stupidest animal in the jungle? A polar bear"
 	"What is Harry Potters favorite method of getting down a hill? Walking. JK: Rolling."
 	"What's the difference between a well dressed man on a unicycle and a poorly dressed man on a bike? Attire."
+	"What do you call a bear with no teeth? A gummy bear"
 ]
