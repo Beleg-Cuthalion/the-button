@@ -39,10 +39,12 @@ exports.client_incr = (clicks) !->
 				text: App.userName() + " outclicked you!"
 
 initUser = !->
-	Db.personal(App.userId()).set('funnies', undefined)
-	Db.personal(App.userId()).set('limit', 0)
-	Db.personal(App.userId()).set('odds', 50)
-	Db.personal(App.userId()).set('timelimit', 0)
+	userId = App.userId()
+	Db.personal(userId).set('funnies', undefined)
+	Db.personal(userId).set('limit', 0)
+	Db.personal(userId).set('odds', 50)
+	Db.personal(userId).set('timelimit', 0)
+	Db.shared.set('counters', userId, 0)
 
 getSortedCounters = ->
 	counters = Db.shared.get('counters')
@@ -63,11 +65,13 @@ exports.onLeave = (userId) !->
 	Db.personal(userId).set('timelimit', null)
 	Db.shared.set('counters', userId, null)
 
-### useful for debugging and fixes
+###useful for debugging and fixes
 exports.onUpgrade = !->
 	for user in App.userIds()
 		#Db.personal(user).set('funnies', null)
 		Db.personal(user).set('limit', 0)
 		Db.personal(user).set('timelimit', 0)
 		Db.personal(user).set('odds', 60)
+		Db.shared.counters.user.set('counters', 0)
+
 ###

@@ -28,7 +28,7 @@ exports.render = ->
 
 		renderFunny()
 
-	renderScores
+	renderScores()
 
 renderButton = !->
 	Dom.div !->
@@ -46,18 +46,25 @@ renderButton = !->
 			else
 				Server.call 'incr'
 			###
-
+			###
 			if not buffer.peek() # buffer still 0? then this is the first click
 				Obs.onTime 1000, !-> flushBuffer buffer
 				log 'buffered', buffer
 			buffer.incr()
 			log 'buffer' #, buffer.get()
+			###
+
+			buffer.incr()
+
+			if buffer.get() is 1
+				Obs.onTime 1000, !-> flushBuffer buffer
 
 flushBuffer = !->
-	counter = Db.shared.ref 'counters', App.userId()
-	Server.sync 'incr', buffer.get(), !->
-		counter.set(counter.get() + buffer.get())
-		buffer.set(0)
+	#counter = Db.shared.ref 'counters', App.userId()
+	log 'buffered', buffer.get()
+	Server.sync 'incr', buffer.get() #, !->
+		#counter.set(counter.get() + buffer.get())
+	buffer.set(0)
 
 renderFunny = !->
 	Obs.observe !->
