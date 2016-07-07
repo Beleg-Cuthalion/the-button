@@ -6,11 +6,6 @@
 
 ###
 
-
-###
-done = Obs.create true Obs.observe !-> diff = player.get('score') - localPlayer.peek('score') return if diff is 0 done.set false setInterval (1/diff), !-> localPlayer.incr 'score' if player.get('score') is localPlayer.peek('score') done.set true
-###
-
 Comments = require 'comments'
 Db = require 'db'
 Dom = require 'dom'
@@ -20,31 +15,31 @@ Obs = require 'obs'
 App = require 'app'
 Plugin = require 'plugin'
 
+BUFFER_TIME = 1000
+
 exports.render = ->
-	###
 	# create local copy of the scores
 	localScores = Obs.create {}
+	copied = {}
 	Obs.observe !->
 		Db.shared.iterate 'counters', (v) !->
+			# just copy once!
+			return if copied[v.key()]
+			copied[v.key()] = true
 			localScores.set 'counters', v.key(), v.peek()
 
-	done = Obs.create true
-	Obs.observe !->
-		diff = player.get('score') - localPlayer.peek('score')
-		return if diff is 0
-		done.set false
-		setInterval (1/diff), !->
-			localPlayer.incr 'score'
-			if player.get('score') is localPlayer.peek('score') done.set true
-	###
 	buffer = Obs.create 0
+	# keep app user's local score synced with buffer
+	Obs.observe !->
+		newVal = Db.shared.get('counters', App.userId()) + buffer.get()
+		localScores.set 'counters', App.userId(), newVal
 
 	Ui.card !->
 		renderButton buffer
 
 		renderFunny()
 
-	renderScores buffer
+	renderScores localScores
 
 renderButton = (buffer) !->
 	buffering = Obs.create false
@@ -60,7 +55,7 @@ renderButton = (buffer) !->
 
 	Obs.observe !->
 		return unless buffering.get()
-		Obs.onTime 1000, !->
+		Obs.onTime BUFFER_TIME, !->
 			bufferedClicks = buffer.peek()
 			buffer.set(0)
 
@@ -75,26 +70,49 @@ renderFunny = !->
 		if funny?
 			Dom.div !->
 				Dom.animate
-            			create:
-            				opacity: 1 # target
-            				initial:
-                  				opacity: 0
-            			remove:
-            				opacity: 0 # target
-            				initial:
-                  				opacity: 1
-            			content: !->
+						create:
+							opacity: 1 # target
+							initial:
+								opacity: 0
+						remove:
+							opacity: 0 # target
+							initial:
+								opacity: 1
+						content: !->
 						Dom.style fontSize: '150%', textAlign: 'center', padding: "30px 5px 15px"
 						Dom.text funny
 
-renderScores = (buffer) !->
+renderScores = (localScores) !->
+	done = Obs.create true
+
+	# make a list of all the player ids
+	playerList = Obs.create {}
+	Obs.observe !->
+		Db.shared.iterate 'counters', (counter) !->
+			userId = + counter.key()
+			return if userId is App.userId()
+			playerList.set userId, true
+
+	# animate scores when receiving someone's buffered clicks
+	playerList.iterate (userId) !->
+		done.get() # subscribe
+
+		realCounter = Db.shared.ref('counters', userId.key())
+		localCounter = localScores.ref('counters', userId.key())
+		diff = realCounter.get() - localCounter.peek()
+		return if diff is 0
+		done.set false
+		stepTime = Math.round(BUFFER_TIME/diff)
+		Obs.interval stepTime, !->
+			localCounter.incr()
+			if realCounter.peek() <= localCounter.peek()
+				done.set true
+
 	Ui.list !->
 		Dom.style margin: '0 15px'
-		Db.shared.iterate 'counters',
-			((counter) !-> renderScore(counter, buffer)),
-			(counter) -> -(counter.get() + if (counter.key() is App.userId()) then buffer.get() else 0)
+		localScores.iterate 'counters', renderScore, (counter) -> -counter.get()
 
-renderScore = (counter, buffer) !->
+renderScore = (counter) !->
 	Ui.item !->
 		userId = +counter.key()
 		if userId is App.userId()
@@ -106,7 +124,4 @@ renderScore = (counter, buffer) !->
 			Dom.style marginLeft: '10px', Flex: 1
 			Dom.text App.userName(userId)
 		Dom.div !->
-			if userId is App.userId()
-				Dom.text counter.get() + buffer.get()
-			else
-				Dom.text counter.get()
+			Dom.text counter.get()
