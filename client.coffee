@@ -20,17 +20,34 @@ Obs = require 'obs'
 App = require 'app'
 Plugin = require 'plugin'
 
-buffer = Obs.create 0
-
 exports.render = ->
+	###
+	# create local copy of the scores
+	localScores = Obs.create {}
+	Obs.observe !->
+		Db.shared.iterate 'counters', (v) !->
+			localScores.set 'counters', v.key(), v.peek()
+
+	done = Obs.create true
+	Obs.observe !->
+		diff = player.get('score') - localPlayer.peek('score')
+		return if diff is 0
+		done.set false
+		setInterval (1/diff), !->
+			localPlayer.incr 'score'
+			if player.get('score') is localPlayer.peek('score') done.set true
+	###
+	buffer = Obs.create 0
+
 	Ui.card !->
-		renderButton()
+		renderButton buffer
 
 		renderFunny()
 
-	renderScores()
+	renderScores buffer
 
-renderButton = !->
+renderButton = (buffer) !->
+	buffering = Obs.create false
 	Dom.div !->
 		Dom.style _userSelect: 'none', textAlign: 'center', maxWidth: '700px', borderRadius: '10px', boxShadow: '0 0 10px #aaa', border: '4px solid '+Plugin.colors().highlight, padding: '10px 16px'
 		Dom.div !->
@@ -38,16 +55,19 @@ renderButton = !->
 			Dom.text "Click"
 
 		Dom.onTap !->
+			buffering.set true
 			buffer.incr()
-			if buffer.get() is 1
-				Obs.onTime 1000, !-> flushBuffer buffer
 
-flushBuffer = !->
-	#counter = Db.shared.ref 'counters', App.userId()
-	log 'buffered', buffer.get()
-	Server.sync 'incr', buffer.get() #, !->
-		#counter.set(counter.get() + buffer.get())
-	buffer.set(0)
+	Obs.observe !->
+		return unless buffering.get()
+		Obs.onTime 1000, !->
+			bufferedClicks = buffer.peek()
+			buffer.set(0)
+
+			log 'buffered', bufferedClicks
+			Server.sync 'incr', bufferedClicks, !->
+				Db.shared.incr 'counters', App.userId(), bufferedClicks
+			buffering.set false
 
 renderFunny = !->
 	Obs.observe !->
@@ -70,9 +90,11 @@ renderFunny = !->
 renderScores = (buffer) !->
 	Ui.list !->
 		Dom.style margin: '0 15px'
-		Db.shared.iterate 'counters', renderScore, (counter) -> -(counter.get() + if (counter.key() is App.userId()) then buffer.get() else 0)
+		Db.shared.iterate 'counters',
+			((counter) !-> renderScore(counter, buffer)),
+			(counter) -> -(counter.get() + if (counter.key() is App.userId()) then buffer.get() else 0)
 
-renderScore = (counter) !->
+renderScore = (counter, buffer) !->
 	Ui.item !->
 		userId = +counter.key()
 		if userId is App.userId()
