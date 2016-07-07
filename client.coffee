@@ -38,24 +38,7 @@ renderButton = !->
 			Dom.text "Click"
 
 		Dom.onTap !->
-			###
-			counter = Db.shared.ref 'counters', App.userId()
-			if counter?
-				Server.sync 'incr', !->
-					counter.incr()
-			else
-				Server.call 'incr'
-			###
-			###
-			if not buffer.peek() # buffer still 0? then this is the first click
-				Obs.onTime 1000, !-> flushBuffer buffer
-				log 'buffered', buffer
 			buffer.incr()
-			log 'buffer' #, buffer.get()
-			###
-
-			buffer.incr()
-
 			if buffer.get() is 1
 				Obs.onTime 1000, !-> flushBuffer buffer
 
@@ -87,7 +70,7 @@ renderFunny = !->
 renderScores = (buffer) !->
 	Ui.list !->
 		Dom.style margin: '0 15px'
-		Db.shared.iterate 'counters', renderScore, (counter) -> -(counter.get() + if (+counter.key() is App.userId()) then buffer.get() else 0)
+		Db.shared.iterate 'counters', renderScore, (counter) -> -(counter.get() + if (counter.key() is App.userId()) then buffer.get() else 0)
 
 renderScore = (counter) !->
 	Ui.item !->
