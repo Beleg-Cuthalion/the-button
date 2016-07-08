@@ -9,8 +9,8 @@ exports.client_incr = (clicks) !->
 	userId = App.userId()
 	counter = Db.shared.ref 'counters', userId
 
-	if not counter.get()?
-		initUser()
+#	if not counter.get()?
+#		initUser()
 
 	oldSorted = getSortedCounters()
 	oldPos = oldSorted.indexOf userId
@@ -60,15 +60,18 @@ decideFunny = (userId, counter) !->
 	odds = counterOdds * timeOdds
 	return if Math.random() > odds
 
-	# yay, you get a funny!
+	# yay, you get a funny! you get a funny! you get a funny!
 	funny = Funnies.getRandom info.ref('seen')
 	info.set 'current', funny
 	info.set 'lastCount', counter
 	info.set 'lastTime', App.time()
 	Timer.set 6000, 'clearFunny', userId
 
-initUser = !->
-	userId = App.userId()
+#initUser = !->
+#	userId = App.userId()
+#	Db.shared.set('counters', userId, 0)
+
+exports.onJoin = (userId) !->
 	Db.shared.set('counters', userId, 0)
 
 exports.clearFunny = (userId) !->
@@ -90,7 +93,6 @@ exports.onUpgrade = !->
 		pdb.set 'odds', null
 		pdb.set 'timelimit', null
 ###
-
 
 ###useful for debugging and fixes
 exports.onUpgrade = !->

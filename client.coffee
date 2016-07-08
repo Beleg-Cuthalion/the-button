@@ -1,9 +1,7 @@
 ###
-
 	Big thanks to Peter for his help, debugging and tips.
 
 	Snippets of code in both client.coffee and server.coffee have been adapted from the Happening documentation and existing Happening plugins: Example, Photohunt and BombDefuse
-
 ###
 
 Comments = require 'comments'
@@ -16,6 +14,7 @@ App = require 'app'
 Plugin = require 'plugin'
 
 BUFFER_TIME = 1000
+started = Obs.create false
 
 exports.render = ->
 	# create local copy of the scores
@@ -39,7 +38,22 @@ exports.render = ->
 
 		renderFunny()
 
-	renderScores localScores
+	Obs.observe !->
+		Db.shared.iterate 'counters', (counter) !->
+			if counter isnt 0
+				started.set true
+
+	if started.get() is true
+		renderScores localScores
+###
+sum = (o, prop) !->
+	result = Obs.create 0
+	o.iterate (item) !->
+		tmp = item.get(prop) ? 0
+		result.incr tmp
+		Obs.onClean !-> result.incr -tmp
+	return result
+###
 
 renderButton = (buffer) !->
 	buffering = Obs.create false
@@ -58,7 +72,6 @@ renderButton = (buffer) !->
 		Obs.onTime BUFFER_TIME, !->
 			bufferedClicks = buffer.peek()
 			buffer.set(0)
-
 			#log 'buffered', bufferedClicks
 			Server.sync 'incr', bufferedClicks, !->
 				Db.shared.incr 'counters', App.userId(), bufferedClicks
@@ -113,15 +126,16 @@ renderScores = (localScores) !->
 		localScores.iterate 'counters', renderScore, (counter) -> -counter.get()
 
 renderScore = (counter) !->
-	Ui.item !->
-		userId = +counter.key()
-		if userId is App.userId()
-			Dom.style fontWeight: 'bold'
-		Ui.avatar
-			key: App.userAvatar(userId)
-			onTap: !-> App.showMemberInfo(userId)
-		Dom.div !->
-			Dom.style marginLeft: '10px', Flex: 1
-			Dom.text App.userName(userId)
-		Dom.div !->
-			Dom.text counter.get()
+	userId = +counter.key()
+	if counter.get() > 0
+		Ui.item !->
+			if userId is App.userId()
+				Dom.style fontWeight: 'bold'
+			Ui.avatar
+				key: App.userAvatar(userId)
+				onTap: !-> App.showMemberInfo(userId)
+			Dom.div !->
+				Dom.style marginLeft: '10px', Flex: 1
+				Dom.text App.userName(userId)
+			Dom.div !->
+				Dom.text counter.get()
