@@ -59,7 +59,7 @@ renderButton = (buffer) !->
 			bufferedClicks = buffer.peek()
 			buffer.set(0)
 
-			log 'buffered', bufferedClicks
+			#log 'buffered', bufferedClicks
 			Server.sync 'incr', bufferedClicks, !->
 				Db.shared.incr 'counters', App.userId(), bufferedClicks
 			buffering.set false
