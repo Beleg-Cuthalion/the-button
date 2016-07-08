@@ -14,12 +14,12 @@ App = require 'app'
 Plugin = require 'plugin'
 
 BUFFER_TIME = 1000
-started = Obs.create false
 
 exports.render = ->
 	# create local copy of the scores
 	localScores = Obs.create {}
 	copied = {}
+	started = Obs.create false
 	Obs.observe !->
 		Db.shared.iterate 'counters', (v) !->
 			# just copy once!
@@ -43,8 +43,9 @@ exports.render = ->
 			if counter isnt 0
 				started.set true
 
-	if started.get() is true
-		renderScores localScores
+	Obs.observe !->
+		if started.get() is true
+			renderScores localScores
 ###
 sum = (o, prop) !->
 	result = Obs.create 0
