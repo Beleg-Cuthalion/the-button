@@ -66,7 +66,7 @@ renderButton = (buffer) !->
 
 renderFunny = !->
 	Obs.observe !->
-		funny = Db.personal.get('funnies')
+		funny = Db.personal.get('funnies', 'current')
 		if funny?
 			Dom.div !->
 				Dom.animate
