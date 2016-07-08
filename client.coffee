@@ -6,11 +6,6 @@
 
 ###
 
-
-###
-done = Obs.create true Obs.observe !-> diff = player.get('score') - localPlayer.peek('score') return if diff is 0 done.set false setInterval (1/diff), !-> localPlayer.incr 'score' if player.get('score') is localPlayer.peek('score') done.set true
-###
-
 Comments = require 'comments'
 Db = require 'db'
 Dom = require 'dom'
@@ -20,17 +15,34 @@ Obs = require 'obs'
 App = require 'app'
 Plugin = require 'plugin'
 
-buffer = Obs.create 0
+BUFFER_TIME = 1000
 
 exports.render = ->
+	# create local copy of the scores
+	localScores = Obs.create {}
+	copied = {}
+	Obs.observe !->
+		Db.shared.iterate 'counters', (v) !->
+			# just copy once!
+			return if copied[v.key()]
+			copied[v.key()] = true
+			localScores.set 'counters', v.key(), v.peek()
+
+	buffer = Obs.create 0
+	# keep app user's local score synced with buffer
+	Obs.observe !->
+		newVal = Db.shared.get('counters', App.userId()) + buffer.get()
+		localScores.set 'counters', App.userId(), newVal
+
 	Ui.card !->
-		renderButton()
+		renderButton buffer
 
 		renderFunny()
 
-	renderScores()
+	renderScores localScores
 
-renderButton = !->
+renderButton = (buffer) !->
+	buffering = Obs.create false
 	Dom.div !->
 		Dom.style _userSelect: 'none', textAlign: 'center', maxWidth: '700px', borderRadius: '10px', boxShadow: '0 0 10px #aaa', border: '4px solid '+Plugin.colors().highlight, padding: '10px 16px'
 		Dom.div !->
@@ -38,16 +50,19 @@ renderButton = !->
 			Dom.text "Click"
 
 		Dom.onTap !->
+			buffering.set true
 			buffer.incr()
-			if buffer.get() is 1
-				Obs.onTime 1000, !-> flushBuffer buffer
 
-flushBuffer = !->
-	#counter = Db.shared.ref 'counters', App.userId()
-	log 'buffered', buffer.get()
-	Server.sync 'incr', buffer.get() #, !->
-		#counter.set(counter.get() + buffer.get())
-	buffer.set(0)
+	Obs.observe !->
+		return unless buffering.get()
+		Obs.onTime BUFFER_TIME, !->
+			bufferedClicks = buffer.peek()
+			buffer.set(0)
+
+			log 'buffered', bufferedClicks
+			Server.sync 'incr', bufferedClicks, !->
+				Db.shared.incr 'counters', App.userId(), bufferedClicks
+			buffering.set false
 
 renderFunny = !->
 	Obs.observe !->
@@ -55,22 +70,47 @@ renderFunny = !->
 		if funny?
 			Dom.div !->
 				Dom.animate
-            			create:
-            				opacity: 1 # target
-            				initial:
-                  				opacity: 0
-            			remove:
-            				opacity: 0 # target
-            				initial:
-                  				opacity: 1
-            			content: !->
+						create:
+							opacity: 1 # target
+							initial:
+								opacity: 0
+						remove:
+							opacity: 0 # target
+							initial:
+								opacity: 1
+						content: !->
 						Dom.style fontSize: '150%', textAlign: 'center', padding: "30px 5px 15px"
 						Dom.text funny
 
-renderScores = (buffer) !->
+renderScores = (localScores) !->
+	done = Obs.create true
+
+	# make a list of all the player ids
+	playerList = Obs.create {}
+	Obs.observe !->
+		Db.shared.iterate 'counters', (counter) !->
+			userId = + counter.key()
+			return if userId is App.userId()
+			playerList.set userId, true
+
+	# animate scores when receiving someone's buffered clicks
+	playerList.iterate (userId) !->
+		done.get() # subscribe
+
+		realCounter = Db.shared.ref('counters', userId.key())
+		localCounter = localScores.ref('counters', userId.key())
+		diff = realCounter.get() - localCounter.peek()
+		return if diff is 0
+		done.set false
+		stepTime = Math.round(BUFFER_TIME/diff)
+		Obs.interval stepTime, !->
+			localCounter.incr()
+			if realCounter.peek() <= localCounter.peek()
+				done.set true
+
 	Ui.list !->
 		Dom.style margin: '0 15px'
-		Db.shared.iterate 'counters', renderScore, (counter) -> -(counter.get() + if (counter.key() is App.userId()) then buffer.get() else 0)
+		localScores.iterate 'counters', renderScore, (counter) -> -counter.get()
 
 renderScore = (counter) !->
 	Ui.item !->
@@ -84,7 +124,4 @@ renderScore = (counter) !->
 			Dom.style marginLeft: '10px', Flex: 1
 			Dom.text App.userName(userId)
 		Dom.div !->
-			if userId is App.userId()
-				Dom.text counter.get() + buffer.get()
-			else
-				Dom.text counter.get()
+			Dom.text counter.get()
