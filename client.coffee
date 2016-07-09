@@ -42,7 +42,7 @@ exports.render = ->
 		Db.shared.iterate 'counters', (counter) !->
 			if counter isnt 0
 				started.set true
-
+				
 	Obs.observe !->
 		if started.get() is true
 			renderScores localScores
