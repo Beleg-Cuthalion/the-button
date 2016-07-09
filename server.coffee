@@ -71,15 +71,8 @@ decideFunny = (userId, counter) !->
 #	userId = App.userId()
 #	Db.shared.set('counters', userId, 0)
 
-exports.onJoin = (userId) !->
-	Db.shared.set('counters', userId, 0)
-
 exports.clearFunny = (userId) !->
 	Db.personal(userId).set 'funnies', 'current', null
-
-exports.onLeave = (userId) !->
-	Db.personal(userId).set('funnies', null)
-	Db.shared.set('counters', userId, null)
 
 ### Run this once to migrate users' seenLines -Peter
 exports.onUpgrade = !->
