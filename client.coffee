@@ -46,15 +46,6 @@ exports.render = ->
 	Obs.observe !->
 		if started.get()
 			renderScores localScores
-###
-sum = (o, prop) !->
-	result = Obs.create 0
-	o.iterate (item) !->
-		tmp = item.get(prop) ? 0
-		result.incr tmp
-		Obs.onClean !-> result.incr -tmp
-	return result
-###
 
 renderButton = (buffer) !->
 	buffering = Obs.create false
@@ -73,7 +64,7 @@ renderButton = (buffer) !->
 		Obs.onTime BUFFER_TIME, !->
 			bufferedClicks = buffer.peek()
 			buffer.set(0)
-			#log 'buffered', bufferedClicks
+
 			Server.sync 'incr', bufferedClicks, !->
 				Db.shared.incr 'counters', App.userId(), bufferedClicks
 			buffering.set false
@@ -114,7 +105,7 @@ renderScores = (localScores) !->
 		realCounter = Db.shared.ref('counters', userId.key())
 		localCounter = localScores.ref('counters', userId.key())
 		diff = realCounter.get() - localCounter.peek()
-		return if diff is 0
+		return if diff <= 0
 		done.set false
 		stepTime = Math.round(BUFFER_TIME/diff)
 		Obs.interval stepTime, !->

@@ -9,9 +9,6 @@ exports.client_incr = (clicks) !->
 	userId = App.userId()
 	counter = Db.shared.ref 'counters', userId
 
-#	if not counter.get()?
-#		initUser()
-
 	oldSorted = getSortedCounters()
 	oldPos = oldSorted.indexOf userId
 
@@ -45,18 +42,14 @@ decideFunny = (userId, counter) !->
 
 	# you have all the info you need , now DECIDE!
 	timePassed = App.time() - lastTime
-	#log timePassed
 	return if timePassed < MIN_TIME
 
 	clicksPassed = counter - lastCount
-	#log clicksPassed
 	return if clicksPassed < MIN_CLICKS
 
 	timeOdds = Math.min 1, ((timePassed - MIN_TIME) / (10 * MIN_TIME))
-
 	counterOdds = Math.min 1, ((clicksPassed - MIN_CLICKS) / (10* MIN_CLICKS))
 
-	#log counterOdds, ' * ', timeOdds, ' : ', counterOdds * timeOdds
 	odds = counterOdds * timeOdds
 	return if Math.random() > odds
 
@@ -67,14 +60,10 @@ decideFunny = (userId, counter) !->
 	info.set 'lastTime', App.time()
 	Timer.set 6000, 'clearFunny', userId
 
-#initUser = !->
-#	userId = App.userId()
-#	Db.shared.set('counters', userId, 0)
-
 exports.clearFunny = (userId) !->
 	Db.personal(userId).set 'funnies', 'current', null
 
-### Run this once to migrate users' seenLines -Peter
+## Run this once to migrate users' seenLines -Peter
 exports.onUpgrade = !->
 	for user in App.userIds()
 		pdb = Db.personal(user)
@@ -85,7 +74,7 @@ exports.onUpgrade = !->
 		pdb.set 'limit', null
 		pdb.set 'odds', null
 		pdb.set 'timelimit', null
-###
+##
 
 ###useful for debugging and fixes
 exports.onUpgrade = !->
@@ -94,6 +83,7 @@ exports.onUpgrade = !->
 		Db.personal(user).set('limit', 0)
 		Db.personal(user).set('timelimit', 0)
 		Db.personal(user).set('odds', 60)
+		Db.personal(user).set('seenlines', 20, true)
 		Db.shared.counters.user.set('counters', 0)
 
 ###
