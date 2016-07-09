@@ -30,8 +30,11 @@ exports.render = ->
 	buffer = Obs.create 0
 	# keep app user's local score synced with buffer
 	Obs.observe !->
-		newVal = Db.shared.get('counters', App.userId()) + buffer.get()
-		localScores.set 'counters', App.userId(), newVal
+		oldScore = Db.shared.get('counters', App.userId()) ? 0
+		newScore = oldScore + buffer.get()
+		return if newScore is 0
+		localScores.set 'counters', App.userId(), newScore
+		started.set true
 
 	Ui.card !->
 		renderButton buffer
@@ -39,12 +42,9 @@ exports.render = ->
 		renderFunny()
 
 	Obs.observe !->
-		Db.shared.iterate 'counters', (counter) !->
-			if counter isnt 0
-				started.set true
-				
+		Db.shared.iterate 'counters', (counter) !-> started.set true
 	Obs.observe !->
-		if started.get() is true
+		if started.get()
 			renderScores localScores
 ###
 sum = (o, prop) !->
@@ -128,7 +128,7 @@ renderScores = (localScores) !->
 
 renderScore = (counter) !->
 	userId = +counter.key()
-	if counter.get() > 0
+	if counter.get()?
 		Ui.item !->
 			if userId is App.userId()
 				Dom.style fontWeight: 'bold'
