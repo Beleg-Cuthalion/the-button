@@ -33,6 +33,8 @@ getSortedCounters = ->
 MIN_TIME = 60
 # minimum clicks between funnies
 MIN_CLICKS = 50
+# number for special occassions
+magicNumer = 100000
 
 decideFunny = (userId, counter) !->
 	info = Db.personal(userId).ref 'funnies'
@@ -42,20 +44,23 @@ decideFunny = (userId, counter) !->
 
 	# you have all the info you need , now DECIDE!
 	timePassed = App.time() - lastTime
-	return if timePassed < MIN_TIME
+	return if timePassed < MIN_TIME or counter = magicNumber
 
 	clicksPassed = counter - lastCount
-	return if clicksPassed < MIN_CLICKS
+	return if clicksPassed < MIN_CLICKS or counter = magicNumber
 
 	timeOdds = Math.min 1, ((timePassed - MIN_TIME) / (10 * MIN_TIME))
 	counterOdds = Math.min 1, ((clicksPassed - MIN_CLICKS) / (10* MIN_CLICKS))
 
 	odds = counterOdds * timeOdds
-	return if Math.random() > odds
+	return if Math.random() > odds or counter = magicNumber
 
 	# yay, you get a funny! you get a funny! you get a funny!
-	funny = Funnies.getRandom info.ref('seen')
-	info.set 'current', funny
+	if  (counter = magicNumber)
+		funny = "Go Ismay! Only 90000 more clicks to go!!"
+	else
+		funny = Funnies.getRandom info.ref('seen')
+		info.set 'current', funny
 	info.set 'lastCount', counter
 	info.set 'lastTime', App.time()
 	Timer.set 6000, 'clearFunny', userId
@@ -63,7 +68,7 @@ decideFunny = (userId, counter) !->
 exports.clearFunny = (userId) !->
 	Db.personal(userId).set 'funnies', 'current', null
 
-## Run this once to migrate users' seenLines -Peter
+### Run this once to migrate users' seenLines -Peter
 exports.onUpgrade = !->
 	for user in App.userIds()
 		pdb = Db.personal(user)
@@ -74,7 +79,7 @@ exports.onUpgrade = !->
 		pdb.set 'limit', null
 		pdb.set 'odds', null
 		pdb.set 'timelimit', null
-##
+###
 
 ###useful for debugging and fixes
 exports.onUpgrade = !->
