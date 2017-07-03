@@ -33,8 +33,7 @@ getSortedCounters = ->
 MIN_TIME = 60
 # minimum clicks between funnies
 MIN_CLICKS = 50
-# number for special occassions
-magicNumer = 100000
+
 
 decideFunny = (userId, counter) !->
 	info = Db.personal(userId).ref 'funnies'
@@ -44,23 +43,20 @@ decideFunny = (userId, counter) !->
 
 	# you have all the info you need , now DECIDE!
 	timePassed = App.time() - lastTime
-	return if timePassed < MIN_TIME or counter = magicNumber
+	return if timePassed < MIN_TIME
 
 	clicksPassed = counter - lastCount
-	return if clicksPassed < MIN_CLICKS or counter = magicNumber
+	return if clicksPassed < MIN_CLICKS
 
 	timeOdds = Math.min 1, ((timePassed - MIN_TIME) / (10 * MIN_TIME))
 	counterOdds = Math.min 1, ((clicksPassed - MIN_CLICKS) / (10* MIN_CLICKS))
 
 	odds = counterOdds * timeOdds
-	return if Math.random() > odds or counter = magicNumber
+	return if Math.random() > odds
 
 	# yay, you get a funny! you get a funny! you get a funny!
-	if  (counter = magicNumber)
-		funny = "Go Ismay! Only 90000 more clicks to go!!"
-	else
-		funny = Funnies.getRandom info.ref('seen')
-		info.set 'current', funny
+	funny = Funnies.getRandom info.ref('seen')
+	info.set 'current', funny
 	info.set 'lastCount', counter
 	info.set 'lastTime', App.time()
 	Timer.set 6000, 'clearFunny', userId
