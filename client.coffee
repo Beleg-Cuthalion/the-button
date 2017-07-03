@@ -14,7 +14,7 @@ App = require 'app'
 Plugin = require 'plugin'
 
 BUFFER_TIME = 1000
-MAGICNUMBER = 275
+MAGICNUMBER = 300
 
 exports.render = ->
 	# create local copy of the scores
@@ -39,7 +39,7 @@ exports.render = ->
 
 	Ui.card !->
 		renderButton buffer
-		renderMagic buffer, localScores
+		renderMagic localScores
 		renderFunny()
 
 	Obs.observe !->
@@ -70,9 +70,10 @@ renderButton = (buffer) !->
 				Db.shared.incr 'counters', App.userId(), bufferedClicks
 			buffering.set false
 
-renderMagic = (buffer, localScores) !->
+renderMagic = (localScores) !->
 	Obs.observe !->
-		if localScores.get('counters', App.userId()) is MAGICNUMBER
+		userCurrent = localScores.get('counters', App.userId())
+		if userCurrent >= MAGICNUMBER and userCurrent < MAGICNUMBER + 25
 			Dom.div !->
 				Dom.animate
 						create:
