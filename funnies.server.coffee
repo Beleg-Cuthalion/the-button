@@ -49,7 +49,7 @@ lines = [
 	"[There was some text here]"
 	"Didn't I tell you? I kill a kitten everytime you click this button."
 	"(try clicking in all four corners of the button)"
-	"Click on, thorugh the wind, click on trough the rain, though your dreams be tossed and blown"
+	"Click on, through the wind, click on trough the rain, though your dreams be tossed and blown"
 	"Wait, did I just have a déjà vu? Again?"
 	"Follow the white rabbit."
 	"I have the heart of a lion and a lifetime ban from Wildlands."
