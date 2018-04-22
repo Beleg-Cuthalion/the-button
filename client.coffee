@@ -86,7 +86,7 @@ renderMagic = (localScores) !->
 								opacity: 1
 						content: !->
 						Dom.style fontSize: '150%', textAlign: 'center', padding: "30px 5px 15px"
-						Dom.text "Go Ismay! Only 900000 more clicks to go!!"
+						Dom.text "I'll be damned, that is one absurd amount of clicks. Bloody well done, " + App.userName(App.userId()) + "! But remeber: with great clicking power comes great clicking responsibility."
 
 renderFunny = !->
 	Obs.observe !->
@@ -147,6 +147,7 @@ renderScore = (counter) !->
 				onTap: !-> App.showMemberInfo(userId)
 			Dom.div !->
 				Dom.style marginLeft: '10px', Flex: 1
-				Dom.text App.userName(userId)
+				Dom.text App.userName(userId) + " 👑" if counter.get()>= MAGICNUMBER
+				Dom.text App.userName(userId) if counter.get()< MAGICNUMBER
 			Dom.div !->
 				Dom.text counter.get()
