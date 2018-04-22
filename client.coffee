@@ -147,7 +147,6 @@ renderScore = (counter) !->
 				onTap: !-> App.showMemberInfo(userId)
 			Dom.div !->
 				Dom.style marginLeft: '10px', Flex: 1
-				Dom.text App.userName(userId) + " 👑" if counter.get()>= MAGICNUMBER
-				Dom.text App.userName(userId) if counter.get()< MAGICNUMBER
+				Dom.text (if counter.get()>= FINALNUMBER then App.userName(userId) + " 👑" else  App.userName(userId))
 			Dom.div !->
 				Dom.text counter.get()
