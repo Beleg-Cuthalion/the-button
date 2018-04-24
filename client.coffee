@@ -40,13 +40,14 @@ exports.render = ->
 		started.set true
 
 	Ui.card !->
-		Dom.style transition: 'background 6s ease'
+		Dom.style transition: 'background 14s ease', height: '138px', boxSizing: 'border-box'
 		Obs.observe !->
-			if finalReached.get()
-				Dom.style background: '#333', color: '#ffd700'
+			return unless finalReached.get()
+			Dom.style background: '#333', color: '#ffd700', overflow: 'hidden'
 		renderButton finalReached, Db.shared.ref('counters', App.userId()), buffer
-		renderMagic localScores
-		renderFunny()
+		#renderMagic localScores
+		Obs.observe !->
+			renderFunny() unless finalReached.get()
 
 	Obs.observe !->
 		Db.shared.iterate 'counters', (counter) !-> started.set true
@@ -57,68 +58,93 @@ exports.render = ->
 renderButton = (finalReached, count, buffer) !->
 	animationDone = Obs.create finalReached.peek()
 	buttonText = Obs.create (if finalReached.peek() then "WINNER" else "Click")
+	doneSpin = animationDone.peek()
 
 	buffering = Obs.create false
 	Dom.div !->
-		Dom.style
-			transition: 'border 6s ease'
-			_userSelect: 'none'
-			textAlign: 'center'
-			maxWidth: '700px'
-			borderRadius: '10px'
-			boxShadow: '0 0 10px #aaa'
-			padding: '10px 16px'
-		Obs.observe !->
-			Dom.style border: "4px solid #{if finalReached.get() then '#ffd700' else Plugin.colors().highlight}"
-
 		Dom.div !->
 			Dom.style
-				textTransform: 'uppercase'
-				fontWeight: 'bold'
-				fontSize: '500%'
-				transition: 'color 6s ease'
+				transition: 'border 6s ease'
+				_userSelect: 'none'
+				textAlign: 'center'
+				maxWidth: '700px'
+				borderRadius: '10px'
+				boxShadow: '0 0 10px #aaa'
+				padding: '10px 16px'
 			Obs.observe !->
-				Dom.style color: (if finalReached.get() then '#ffd700' else Plugin.colors().highlight)
+				Dom.style border: "4px solid #{if finalReached.get() then '#ffd700' else Plugin.colors().highlight}"
 
-			Obs.observe !-> Dom.text buttonText.get()
-
-		Obs.observe !->
-			if not finalReached.get()
-				Dom.onTap !->
-					if count?.get() is (FINALNUMBER - 1)
-						finalReached.set true
-						Server.sync 'incr', 1
-					else
-						buffering.set true
-						buffer.incr()
-
-		buttonEl = Dom.get()
-		unless finalReached.peek()
+			Dom.div !->
+				Dom.style
+					textTransform: 'uppercase'
+					fontWeight: 'bold'
+					fontSize: '500%'
+					transition: 'color 6s ease'
 				Obs.observe !->
-					return unless finalReached.get() and not animationDone.get()
-					buttonEl.style transition: 'border 6s ease, transform 5s ease'
+					Dom.style color: (if finalReached.get() then '#ffd700' else Plugin.colors().highlight)
 
-					rotY = Obs.create 0
-					scl = Obs.create 1
-					Obs.observe !->
-						buttonEl.style transform: "rotateY(#{rotY.get()}deg) scale(#{scl.get()})"
-					spinning = Obs.create true
-					Obs.observe !->
-						if spinning.get()
-							Obs.interval 500, !->
-								rotY.set (rotY.get() + 360)
-							Obs.onTime 5000, !->
-								spinning.set false
+				Obs.observe !-> Dom.text buttonText.get()
+
+			Obs.observe !->
+				if not finalReached.get()
+					Dom.onTap !->
+						if true or count?.get() is (FINALNUMBER - 1)
+							finalReached.set true
+							Server.sync 'incr', 1
 						else
-							buttonEl.style transition: 'border 6s ease, transform 1s ease, opacity 1s ease'
-							scl.set 10
-							buttonEl.style opacity: 0
-							Obs.onTime 1000, !->
-								scl.set 1
-								buttonEl.style opacity: 1
-								buttonText.set "WINNER"
+							buffering.set true
+							buffer.incr()
+				else
+					Dom.onTap !->
+						animationDone.set false
+						Obs.emit()
+						animationDone.set true
+
+			buttonEl = Dom.get()
+			unless finalReached.peek()
+					Obs.observe !->
+						return unless finalReached.get() and not animationDone.get() and not doneSpin
+						buttonEl.style transition: 'border 6s ease, transform 5s ease'
+
+						rotY = Obs.create 0
+						scl = Obs.create 1
+						Obs.observe !->
+							buttonEl.style transform: "rotateY(#{rotY.get()}deg) scale(#{scl.get()})"
+						spinning = Obs.create true
+						Obs.observe !->
+							if spinning.get()
+								Obs.interval 500, !->
+									rotY.set (rotY.get() + 360)
+								Obs.onTime 5000, !->
+									spinning.set false
+							else
+								buttonEl.style transition: 'border 6s ease, transform 1s ease, opacity 1s ease'
+								scl.set 10
+								buttonEl.style opacity: 0
 								Obs.onTime 1000, !->
-									animationDone.set true
+									scl.set 1
+									buttonEl.style opacity: 1
+									buttonText.set "WINNER"
+									Obs.onTime 1000, !->
+										animationDone.set true
+										doneSpin = true
+
+		wrapperEl = Dom.get()
+		Obs.observe !->
+			if finalReached.get() and animationDone.get()
+				Dom.div !->
+					Dom.style transform: 'translateY(100px)', padding: '0 20%', fontSize: '1.3em', textAlign: 'justify'
+					Dom.text "klhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkg"
+
+				Obs.onTime 1000, !->
+					wrapperEl.style transition: 'transform 15s linear'
+					wrapperEl.style transform: 'translateY(-120%)'
+					Obs.onTime 15000, !->
+						wrapperEl.style opacity: 0
+						wrapperEl.style transition: 'opacity 1s ease'
+						Obs.onTime 300, !->
+							wrapperEl.style opacity: 1, transform: 'translateY(0)'
+
 
 	Obs.observe !->
 		return unless buffering.get()
