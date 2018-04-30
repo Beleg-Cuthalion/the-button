@@ -163,7 +163,7 @@ renderButton = (finalReached, count, buffer) !->
 					smallGap()
 					Dom.p "Despite all that time clicking, you have been a fantastic co-worker. Turmoil has sometimes engulfed Paiq support, but you've led a brave RESISTANCE. You were thorough enough to find solutions and showed the patience to help in restoring peace and justice to the dating world."
 					smallGap()
-					Dom.p "You helped people search their feelings, and endured the loud-mouthed scoundrels you worked with. Despite Ruurt-Jan's never-ending siege, you were never tempted to join the Dark Side."
+					Dom.p "You helped people search their feelings and endured the loud-mouthed scoundrels you worked with. Despite Ruurt-Jan's never-ending siege, you were never tempted to join the Dark Side."
 					smallGap()
 					Dom.p "Difficult to see, always in motion is the future. But we are certain that your future is very bright! In our experience there is no such thing as luck, but we've been very lucky to have worked with you. We have a good feeling about this."
 					smallGap()
