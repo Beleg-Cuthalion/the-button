@@ -21,7 +21,8 @@ exports.render = ->
 	localScores = Obs.create {}
 	copied = {}
 	started = Obs.create false
-	finalReached = Obs.create (Db.shared.peek 'counters', App.userId() >= FINALNUMBER)
+	finalReached = Obs.create (Db.shared.peek('counters', App.userId()) >= FINALNUMBER)
+
 	Obs.observe !->
 		Db.shared.iterate 'counters', (v) !->
 			# just copy once!
@@ -56,9 +57,10 @@ exports.render = ->
 			renderScores localScores
 
 renderButton = (finalReached, count, buffer) !->
-	animationDone = Obs.create finalReached.peek()
-	buttonText = Obs.create (if finalReached.peek() then "WINNER" else "Click")
-	doneSpin = animationDone.peek()
+	startedFinished = finalReached.peek()
+	animationDone = Obs.create startedFinished
+	buttonText = Obs.create (if startedFinished then "WINNER" else "Click")
+	doneSpin = startedFinished
 
 	buffering = Obs.create false
 	Dom.div !->
@@ -85,16 +87,18 @@ renderButton = (finalReached, count, buffer) !->
 
 				Obs.observe !-> Dom.text buttonText.get()
 
+			lastClick = 0
 			Obs.observe !->
 				if not finalReached.get()
 					Dom.onTap !->
-						if true or count?.get() is (FINALNUMBER - 1)
+						if (count?.get() + buffer.peek()) is (FINALNUMBER - 1)
 							finalReached.set true
+							lastClick = App.time()
 							Server.sync 'incr', 1
 						else
 							buffering.set true
 							buffer.incr()
-				else
+				else if (App.time() - lastClick) > 1
 					Dom.onTap !->
 						animationDone.set false
 						Obs.emit()
@@ -132,14 +136,46 @@ renderButton = (finalReached, count, buffer) !->
 		wrapperEl = Dom.get()
 		Obs.observe !->
 			if finalReached.get() and animationDone.get()
+				if startedFinished
+					startedFinished = false
+					return
 				Dom.div !->
-					Dom.style transform: 'translateY(100px)', padding: '0 20%', fontSize: '1.3em', textAlign: 'justify'
-					Dom.text "klhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhs a dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkgklhsa dbfsa bfha sdk bh adsfbh bfa dhs f dsbfsdfh sd fhksd hgdshfgs d ahfghds afg ksg fkhjsdg adsv fhjkg"
+					smallGap = !-> Dom.div !-> Dom.style height: '70px'
+					bigGap = !-> Dom.div !-> Dom.style height: '200px'
+					Dom.style transform: 'translateY(100px)', padding: '0 20%', fontSize: '1.3em', textAlign: 'justify', lineHeight: '1.3em', boxSizing: 'border-box'
+					Dom.p "A long time ago"
+					Dom.p "in a galaxy far, far away...."
+					smallGap()
+					Dom.p "Ismay began clicking a button, for no real reason."
+					bigGap()
+					Dom.p "It is a period of civil war."
+					Dom.p "Whilst PAIQ is fending off the never-ending attacks by the Sith site Lexa, a new threat looms under the name of TINDER."
+					smallGap()
+					Dom.p "As the Tinder Armies have attempted to besiege Paiq and its valuable users, Ismay, the voice of the Paiq Community, is about to embark on her own journey."
+					Dom.p " Although Met Singles has just been launched, Ismay has driven home her Master's title and is set to pursue the next step of her career."
+					smallGap()
+					Dom.p "Little did Ismay know that THE BUTTON has secretly begun construction on a new animated surprise even more elaborate than the 100.000-mark..."
+					smallGap()
+					Dom.p "The lady Ismay, obsessed with reaching One Million clicks, has spent thousands of minutes clicking the big Button."
+					smallGap()
+					Dom.div !->
+						Dom.style height: '2px', width: '50%', margin: '0 auto', backgroundColor: '#ffd700'
+					smallGap()
+					Dom.p "Despite all that time clicking, you have been a fantastic co-worker. Turmoil has sometimes engulfed Paiq support, but you've led a brave RESISTANCE. You were thorough enough to find solutions and showed the patience to help in restoring peace and justice to the dating world."
+					smallGap()
+					Dom.p "You helped people search their feelings, and endured the loud-mouthed scoundrels you worked with. Despite Ruurt-Jan's never-ending siege, you were never tempted to join the Dark Side."
+					smallGap()
+					Dom.p "Difficult to see, always in motion is the future. But we are certain that your future is very bright! In our experience there is no such thing as luck, but we've been very lucky to have worked with you. We have a good feeling about this."
+					smallGap()
+					Dom.p "May the force be with you."
+					bigGap()
+					Dom.p "...and don't get cocky."
 
 				Obs.onTime 1000, !->
-					wrapperEl.style transition: 'transform 15s linear'
-					wrapperEl.style transform: 'translateY(-120%)'
-					Obs.onTime 15000, !->
+					seconds = 100
+					wrapperEl.style transition: "transform #{seconds}s linear"
+					wrapperEl.style transform: 'translateY(-110%)'
+					Obs.onTime (seconds * 1000), !->
 						wrapperEl.style opacity: 0
 						wrapperEl.style transition: 'opacity 1s ease'
 						Obs.onTime 300, !->
