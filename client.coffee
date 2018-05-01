@@ -47,8 +47,8 @@ exports.render = ->
 			Dom.style background: '#333', color: '#ffd700', overflow: 'hidden'
 		renderButton finalReached, Db.shared.ref('counters', App.userId()), buffer
 		#renderMagic localScores
-		Obs.observe !->
-			renderFunny() unless finalReached.get()
+	Obs.observe !->
+		renderFunny() unless finalReached.get()
 
 	Obs.observe !->
 		Db.shared.iterate 'counters', (counter) !-> started.set true
@@ -191,24 +191,6 @@ renderButton = (finalReached, count, buffer) !->
 			Server.sync 'incr', bufferedClicks, !->
 				Db.shared.incr 'counters', App.userId(), bufferedClicks
 			buffering.set false
-
-renderMagic = (localScores) !->
-	Obs.observe !->
-		userCurrent = localScores.get('counters', App.userId())
-		if userCurrent >= FINALNUMBER and userCurrent < FINALNUMBER + 1000
-			Dom.div !->
-				Dom.animate
-						create:
-							opacity: 1 # target
-							initial:
-								opacity: 0
-						remove:
-							opacity: 0 # target
-							initial:
-								opacity: 1
-						content: !->
-						Dom.style fontSize: '150%', textAlign: 'center', padding: "30px 5px 15px"
-						Dom.text "I'll be damned, that is one absurd amount of clicks. Bloody well done, " + App.userName(App.userId()) + "! But remember: with great clicking power comes great clicking responsibility."
 
 renderFunny = !->
 	Obs.observe !->
